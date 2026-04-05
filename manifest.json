@@ -1,0 +1,21 @@
+{
+  "name": "Entropy Vault",
+  "short_name": "Vault",
+  "description": "Deterministic Security Hub powered by image entropy.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#22d3ee",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23020617%22/><path d=%22M50 20 L80 35 V65 L50 80 L20 65 V35 Z%22 fill=%22none%22 stroke=%22%2322d3ee%22 stroke-width=%225%22/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23020617%22/><path d=%22M50 20 L80 35 V65 L50 80 L20 65 V35 Z%22 fill=%22none%22 stroke=%22%2322d3ee%22 stroke-width=%225%22/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

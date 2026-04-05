@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Entropy Vault | Deterministic Security</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020617">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23020617%22/><path d=%22M50 20 L80 35 V65 L50 80 L20 65 V35 Z%22 fill=%22none%22 stroke=%22%2322d3ee%22 stroke-width=%225%22/></svg>">
+</head>
+<body>
+    <div id="app">
+        <!-- Notification Container -->
+        <div id="notification-container"></div>
+
+        <!-- View 1: Entry / Upload -->
+        <section id="view-entry" class="view active">
+            <div class="container centered">
+                <div class="hero">
+                    <div class="shield-logo">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <h1>Entropy Vault</h1>
+                    <p class="subtitle">Deterministic Security Hub</p>
+                </div>
+
+                <div class="entropy-input-zone">
+                    <!-- Entropy Panel (NEW) -->
+                    <div class="entropy-panel">
+                        <div class="panel-header">
+                            <h3>Entropy Engine</h3>
+                            <span class="hint-icon" title="More sources = stronger entropy">?</span>
+                        </div>
+                        <p class="hint">Combine multiple random sources to generate your unique master seed. This process is fully local and deterministic.</p>
+                        <div class="entropy-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Images</span>
+                                <span id="count-images" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Audio</span>
+                                <span id="status-audio" class="stat-value">None</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Strength</span>
+                                <span id="entropy-strength" class="stat-value">None</span>
+                            </div>
+                        </div>
+                        <p class="trust-message">🛡 All processing happens locally. Nothing is uploaded.</p>
+                    </div>
+
+                    <div class="image-slots" id="image-slots">
+                        <!-- Slots for multi-image mode -->
+                        <div class="slot empty" onclick="document.getElementById('file-input').click()">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="main-actions">
+                        <button id="btn-capture" class="btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                            Capture Image
+                        </button>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <button id="btn-record-audio" class="btn-outline">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                                Record Audio
+                            </button>
+                            <button id="btn-audio-entropy" class="btn-outline">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                Upload Audio
+                            </button>
+                        </div>
+                        <button id="btn-generate" class="btn-accent" disabled>
+                            Initialize Vault
+                        </button>
+                    </div>
+                    <input type="file" id="audio-input" accept="audio/*" style="display: none;">
+
+                    <div class="home-shortcuts">
+                        <button id="btn-home-locker" class="btn-shortcut">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            <span>AES Locker</span>
+                        </button>
+                        <button id="btn-home-stego" class="btn-shortcut">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            <span>Ghost Memo</span>
+                        </button>
+                    </div>
+                    <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
+                </div>
+
+                <footer class="footer">
+                    <p>0% Uploads. 100% Local Math.</p>
+                </footer>
+            </div>
+        </section>
+
+        <!-- View 2: Processing -->
+        <section id="view-processing" class="view">
+            <div class="container centered">
+                <div class="loader-container">
+                    <div class="loader-ring"></div>
+                    <div class="loader-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg>
+                    </div>
+                </div>
+                <h2 id="processing-status">Extracting Entropy...</h2>
+                <div class="progress-bar">
+                    <div id="progress-fill"></div>
+                </div>
+                <canvas id="heatmap-canvas" style="display: none;"></canvas>
+            </div>
+        </section>
+
+        <!-- View 3: Dashboard -->
+        <section id="view-dashboard" class="view">
+            <!-- Session Lock Overlay -->
+            <div id="session-lock-overlay" class="hidden">
+                <div class="lock-content">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <h2>Session Locked</h2>
+                    <p>Vault is hidden for security.</p>
+                    <button id="btn-unlock" class="btn-primary">Unlock Vault</button>
+                </div>
+            </div>
+
+            <header class="app-header">
+                <div class="header-top">
+                    <div class="logo-small">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        <span>Vault</span>
+                    </div>
+                    <div class="header-actions">
+                        <div id="secure-mode-badge" class="badge hidden">Secure Mode Active</div>
+                        <span id="session-timer" class="timer-badge">00:30</span>
+                        <button id="btn-reset" class="btn-icon" title="Reset Session">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="profile-selector">
+                    <div class="selector-group">
+                        <div class="label-with-hint">
+                            <label>Context Profile:</label>
+                            <span class="hint-icon" title="Same seed + different context = completely different outputs. Use this to separate personal and work identities.">?</span>
+                        </div>
+                        <select id="profile-context">
+                            <option value="personal">Personal</option>
+                            <option value="work">Work</option>
+                            <option value="ghost">Ghost</option>
+                            <option value="custom">Custom...</option>
+                        </select>
+                        <p class="field-hint">Active: <span id="active-context-display">personal</span></p>
+                    </div>
+                    <div class="selector-group">
+                        <div class="label-with-hint">
+                            <label>Secure Mode:</label>
+                            <span class="hint-icon" title="Hides sensitive data and disables copying to prevent shoulder surfing.">?</span>
+                        </div>
+                        <button id="btn-toggle-secure" class="btn-icon">
+                            <svg id="secure-icon-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg id="secure-icon-on" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="seed-banner">
+                    <div class="seed-info">
+                        <span class="label">Master Seed</span>
+                        <code id="display-seed" class="sensitive-data">0000...0000</code>
+                    </div>
+                    <div class="seed-actions">
+                        <div class="checksum-group">
+                            <span id="seed-checksum" class="timer-badge">00000000</span>
+                            <span class="hint-icon mini" title="Used to verify seed integrity">?</span>
+                        </div>
+                        <button id="btn-copy-seed" class="btn-copy">Copy</button>
+                    </div>
+                </div>
+                <nav class="tab-nav">
+                    <button class="tab-btn active" data-tab="identity">Identity</button>
+                    <button class="tab-btn" data-tab="vault">Vault</button>
+                    <button class="tab-btn" data-tab="ghost">Ghost</button>
+                    <button class="tab-btn" data-tab="tools">Tools</button>
+                    <button class="tab-btn" data-tab="about">About</button>
+                </nav>
+            </header>
+
+            <main class="tab-content">
+                <!-- Tab: Identity -->
+                <div id="tab-identity" class="tab-pane active">
+                    <div class="card shadow-identity">
+                        <div class="identity-header">
+                            <canvas id="avatar-canvas" width="100" height="100"></canvas>
+                            <div class="identity-text">
+                                <h3 id="shadow-username">Shadow_User</h3>
+                                <p id="shadow-id">ID: 000000</p>
+                            </div>
+                        </div>
+                        <div id="seed-fingerprint" class="fingerprint-container">
+                            <!-- Fingerprint blocks -->
+                        </div>
+                        <p class="hint text-center">Visual Seed Fingerprint</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Password Profiles V2</h3>
+                            <span class="hint-icon" title="Passwords are generated locally and are reproducible using the same seed and service name.">?</span>
+                        </div>
+                        <p class="hint">Deterministic passwords derived from your seed.</p>
+                        <div class="input-stack">
+                            <input type="text" id="service-name" placeholder="Service Name (e.g. Gmail)">
+                            <input type="text" id="username-context" placeholder="Username (optional)">
+                            <div class="range-group">
+                                <label>Length: <span id="pass-length-val">20</span></label>
+                                <input type="range" id="pass-length" min="16" max="32" value="20">
+                            </div>
+                            <div class="strength-meter">
+                                <div id="password-strength-bar" class="strength-bar"></div>
+                            </div>
+                            <button id="btn-gen-password" class="btn-primary">Generate</button>
+                        </div>
+                        <div id="password-result" class="result-box hidden">
+                            <code id="derived-password" class="sensitive-data">********</code>
+                            <button class="btn-copy-inline">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Passphrase Forge</h3>
+                        <p class="hint">Deterministic memorable phrase.</p>
+                        <div class="input-stack">
+                            <div class="selector-group">
+                                <label>Words:</label>
+                                <select id="passphrase-count">
+                                    <option value="4">4 Words (Standard)</option>
+                                    <option value="6">6 Words (High Security)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="passphrase-display">
+                            <div id="passphrase-result">---- ---- ---- ----</div>
+                            <button id="btn-regen-passphrase" class="btn-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Trust Panel -->
+                    <div class="trust-panel">
+                        <div class="trust-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>100% Local Processing</span>
+                        </div>
+                        <div class="trust-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>No Internet Required</span>
+                        </div>
+                        <div class="trust-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Deterministic Outputs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Vault -->
+                <div id="tab-vault" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>AES-256 File Locker</h3>
+                            <span class="hint-icon" title="Military-grade AES-GCM encryption. Files are processed entirely in memory.">?</span>
+                        </div>
+                        <p class="hint">Workflow: Select → Encrypt → Download. To restore: Select Encrypted File → Decrypt.</p>
+                        <div class="file-locker-zone">
+                            <input type="file" id="encrypt-file-input" multiple style="display: none;">
+                            <button id="btn-encrypt-upload" class="btn-outline">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                Select Files to Encrypt
+                            </button>
+                            <div id="encrypt-file-info" class="hidden">
+                                <div id="encrypt-file-list" class="file-list"></div>
+                                <button id="btn-encrypt-file-run" class="btn-primary">Encrypt & Save All</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>AES-256 File Decryptor</h3>
+                            <span class="hint-icon" title="Select a .vault file to decrypt using your current master seed.">?</span>
+                        </div>
+                        <div class="file-locker-zone">
+                            <input type="file" id="decrypt-file-input" accept=".vault" style="display: none;">
+                            <button id="btn-decrypt-upload" class="btn-outline">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                Select .vault File
+                            </button>
+                            <div id="decrypt-file-info" class="hidden">
+                                <span id="decrypt-file-name" class="file-label"></span>
+                                <button id="btn-decrypt-file-run" class="btn-accent">Decrypt & Download</button>
+                            </div>
+                            <div id="decrypt-success" class="hidden success-msg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Decryption Successful
+                            </div>
+                            <div id="decrypt-error" class="hidden error-msg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span id="decrypt-error-text">Decryption Failed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>AES-256 Text Locker</h3>
+                            <span class="hint-icon" title="Encrypt short text snippets or notes. Uses AES-GCM with your master seed.">?</span>
+                        </div>
+                        <div class="text-locker-zone">
+                            <textarea id="text-locker-input" placeholder="Enter text to encrypt or decrypt..."></textarea>
+                            <div class="locker-actions">
+                                <button id="btn-encrypt-text" class="btn-primary">Encrypt</button>
+                                <button id="btn-decrypt-text" class="btn-accent">Decrypt</button>
+                            </div>
+                            <div id="text-locker-result" class="result-box hidden">
+                                <code id="text-locker-output"></code>
+                                <button class="btn-copy-inline">Copy</button>
+                            </div>
+                            <div id="text-locker-error" class="hidden error-msg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span id="text-locker-error-text">Decryption Failed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Deterministic Notes</h3>
+                            <span class="hint-icon" title="Securely store notes in your browser's local storage, encrypted with your seed.">?</span>
+                        </div>
+                        <textarea id="vault-notes" placeholder="Write something private..."></textarea>
+                        <div class="note-actions">
+                            <button id="btn-save-note" class="btn-primary">Save Encrypted</button>
+                            <button id="btn-load-note" class="btn-outline">Load</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Ghost -->
+                <div id="tab-ghost" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Ghost Layer (Steganography)</h3>
+                            <span class="hint-icon" title="Hide messages inside images. Each character uses 8 pixels (1 bit per pixel). The resulting image looks identical to the original.">?</span>
+                        </div>
+                        <p class="hint">1. Select image → 2. Enter message → 3. Encode → 4. Download</p>
+                        
+                        <div class="stego-mode-toggle">
+                            <button class="mode-btn active" data-mode="encode">Encode</button>
+                            <button class="mode-btn" data-mode="decode">Decode</button>
+                        </div>
+                        
+                        <div class="stego-config">
+                            <div class="label-with-hint">
+                                <label>Channel:</label>
+                                <span class="hint-icon mini" title="Blue is more stealthy, Alpha has more capacity">?</span>
+                            </div>
+                            <select id="stego-channel">
+                                <option value="blue">Blue (Stealth)</option>
+                                <option value="alpha">Alpha (Capacity)</option>
+                            </select>
+                        </div>
+
+                        <div id="stego-encode-zone">
+                            <div class="capacity-info">
+                                <span>Max Capacity: <span id="stego-capacity">0</span> chars (≈ total pixels / 8)</span>
+                            </div>
+                            <textarea id="stego-message" placeholder="Secret message to hide..."></textarea>
+                            <button id="btn-stego-process" class="btn-primary">Embed into Image</button>
+                        </div>
+
+                        <div id="stego-decode-zone" class="hidden">
+                            <p class="hint">Upload a PNG to extract hidden data.</p>
+                            <input type="file" id="stego-file-input" accept="image/png" style="display: none;">
+                            <button id="btn-stego-upload" class="btn-outline">Select Stego Image</button>
+                            <button id="btn-stego-decode" class="btn-primary">Extract Message</button>
+                        </div>
+
+                        <div id="stego-result" class="hidden">
+                            <div class="stego-compare">
+                                <div class="compare-box">
+                                    <span>Original</span>
+                                    <div class="compare-preview">
+                                        <img id="stego-input-preview" alt="Original">
+                                    </div>
+                                </div>
+                                <div class="compare-box">
+                                    <span>Encoded</span>
+                                    <div class="compare-preview">
+                                        <img id="stego-output-img" alt="Stego Output">
+                                    </div>
+                                </div>
+                            </div>
+                            <a id="btn-download-stego" class="btn-accent" download="ghost_memo.png">Download PNG</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Tools -->
+                <div id="tab-tools" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Seed Vault</h3>
+                            <span class="hint-icon" title="⚠ Your seed is never stored. Losing it means permanent data loss. Export it for offline storage.">?</span>
+                        </div>
+                        <p class="hint">Export your identity for offline storage.</p>
+                        <div class="tool-grid">
+                            <button id="btn-export-qr-preview" class="btn-outline">Preview QR</button>
+                            <button id="btn-export-json-preview" class="btn-outline">Preview JSON</button>
+                        </div>
+                        <div id="export-preview-zone" class="hidden">
+                            <div id="qr-container" class="hidden">
+                                <canvas id="qr-canvas"></canvas>
+                                <button id="btn-download-qr" class="btn-accent">Download QR</button>
+                            </div>
+                            <div id="json-preview-container" class="hidden">
+                                <pre id="json-preview-text"></pre>
+                                <button id="btn-download-json" class="btn-accent">Download JSON</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Import Seed</h3>
+                        <p class="hint">Restore your vault from a 64-char hex seed.</p>
+                        <div class="input-stack">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="import-seed-input" placeholder="Enter 64-char hex seed..." style="flex: 1;">
+                                <button id="btn-paste-seed" class="btn-outline" style="padding: 0.5rem;" title="Paste from clipboard">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                                </button>
+                            </div>
+                            <div id="import-validation-msg" class="hidden"></div>
+                            <button id="btn-import-seed-run" class="btn-primary">Validate & Load</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Seed Splitter</h3>
+                        <p class="hint">Split your seed into two parts. Both are required to restore.</p>
+                        <div class="tool-grid">
+                            <button id="btn-split-seed" class="btn-outline">Split Seed</button>
+                            <button id="btn-reconstruct-ui" class="btn-outline">Reconstruct</button>
+                        </div>
+                        <div id="split-result" class="hidden">
+                            <div class="split-part">
+                                <label>Part 1:</label>
+                                <code id="seed-part-1"></code>
+                                <button class="btn-copy-inline">Copy</button>
+                            </div>
+                            <div class="split-part">
+                                <label>Part 2:</label>
+                                <code id="seed-part-2"></code>
+                                <button class="btn-copy-inline">Copy</button>
+                            </div>
+                        </div>
+                        <div id="reconstruct-zone" class="hidden">
+                            <div class="input-stack">
+                                <input type="text" id="reconstruct-part-1" placeholder="Enter Part 1">
+                                <input type="text" id="reconstruct-part-2" placeholder="Enter Part 2">
+                                <button id="btn-reconstruct-run" class="btn-primary">Reconstruct & Load</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Vault Backup</h3>
+                        <p class="hint">Export your full vault state (seed, notes, context) as an encrypted bundle.</p>
+                        <div class="tool-grid">
+                            <button id="btn-export-backup" class="btn-primary">Export Backup</button>
+                            <button id="btn-import-backup-ui" class="btn-outline">Import Backup</button>
+                        </div>
+                        <input type="file" id="backup-input" accept=".evb" style="display: none;">
+                    </div>
+
+                    <div class="card">
+                        <h3>Session Settings</h3>
+                        <div class="input-stack">
+                            <div class="range-group">
+                                <label>Auto-lock Timeout: <span id="lock-timeout-val">60</span>s</label>
+                                <input type="range" id="lock-timeout" min="0" max="300" step="10" value="60">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tab: About & Legal -->
+                <div id="tab-about" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>About Entropy Vault</h3>
+                            <span class="badge">v1.0.0</span>
+                        </div>
+                        <p class="hint">Entropy Vault is a 100% offline, deterministic security hub. It uses your unique entropy (images, audio) to generate a master seed, which then derives all your passwords, identities, and encryption keys. No data ever leaves your device.</p>
+                        
+                        <div class="about-grid">
+                            <div class="about-item">
+                                <h4>How it Works</h4>
+                                <p>Entropy → SHA-256 → Master Seed → PBKDF2 → AES-GCM. Every output is mathematically tied to your initial entropy. This ensures that as long as you have your entropy sources, you have your vault.</p>
+                            </div>
+                            <div class="about-item">
+                                <h4>Privacy First</h4>
+                                <p>Zero trackers. Zero uploads. Zero cloud. Your security is enforced by local math, not a remote server. The application is designed to be fully functional even in an air-gapped environment.</p>
+                            </div>
+                            <div class="about-item">
+                                <h4>Deterministic</h4>
+                                <p>The same input always produces the same output. This allows you to "reconstruct" your entire digital security profile from just your master seed or original entropy sources.</p>
+                            </div>
+                            <div class="about-item">
+                                <h4>Open Source</h4>
+                                <p>Transparency is security. Entropy Vault is built with open-source cryptographic standards and the code is fully auditable by the community.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Legal & Trust</h3>
+                        </div>
+                        <div class="legal-accordion">
+                            <details>
+                                <summary>Privacy Policy</summary>
+                                <div class="legal-content">
+                                    <p><strong>1. Data Collection:</strong> Entropy Vault does not collect, store, or transmit any personal data, seeds, or files. All data processing occurs locally within your browser's memory.</p>
+                                    <p><strong>2. Local Storage:</strong> If you use the "Save Encrypted" feature for notes, the data is stored in your browser's <code>localStorage</code>, encrypted with a key derived from your master seed. This data never leaves your device.</p>
+                                    <p><strong>3. Third-Party Services:</strong> We do not use any third-party analytics, tracking cookies, or external APIs. The application is completely self-contained.</p>
+                                    <p><strong>4. Security:</strong> While we use industry-standard cryptographic practices, the security of your vault ultimately depends on the strength of your entropy and the physical security of your device.</p>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>Terms & Conditions</summary>
+                                <div class="legal-content">
+                                    <p><strong>1. Acceptance:</strong> By using Entropy Vault, you agree to these terms. If you do not agree, do not use the application.</p>
+                                    <p><strong>2. No Warranty:</strong> This software is provided "as is" without any warranty of any kind, express or implied. Use at your own risk.</p>
+                                    <p><strong>3. Responsibility:</strong> You are solely responsible for the management and backup of your master seed and entropy sources. Loss of these will result in permanent loss of access to your vault.</p>
+                                    <p><strong>4. Limitation of Liability:</strong> In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from the use of this software.</p>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>License (MIT)</summary>
+                                <div class="legal-content">
+                                    <pre style="white-space: pre-wrap; font-family: var(--font-mono); font-size: 0.75rem;">MIT License
+
+Copyright (c) 2026 Entropy Vault
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>Credits</summary>
+                                <div class="legal-content">
+                                    <p><strong>Idea by:</strong> sahildh3</p>
+                                    <p><strong>Programming by:</strong> Google AI Studio</p>
+                                    <p><strong>Designed & Developed by:</strong> sahildh3</p>
+                                    <p><strong>Powered by:</strong> Web Crypto API & Lucide Icons</p>
+                                    <p><strong>Core Technologies:</strong> Web Crypto API, Canvas API, MediaDevices API.</p>
+                                    <p><strong>Algorithms:</strong> AES-GCM (256-bit), PBKDF2 (SHA-256), SHA-256, HMAC-SHA-256.</p>
+                                    <p><strong>Wordlist:</strong> Memorability-focused English wordlist for deterministic passphrase generation.</p>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Footer -->
+            <footer class="app-footer">
+                <div class="footer-links">
+                    <a href="#" id="link-privacy">Privacy Policy</a>
+                    <span class="separator">•</span>
+                    <a href="#" id="link-terms">Terms & Conditions</a>
+                </div>
+                <div class="footer-credits">
+                    <p>Idea by sahildh3 • Programming by Google AI Studio</p>
+                    <p>Designed & Developed by sahildh3</p>
+                    <p class="powered-by">Powered by Web Crypto API & Lucide Icons</p>
+                </div>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Legal Modals -->
+    <div id="privacy-modal" class="legal-modal">
+        <div class="legal-content">
+            <h3>Privacy Policy</h3>
+            <div class="legal-text">
+                <p><strong>1. Data Collection:</strong> Entropy Vault does not collect, store, or transmit any personal data, seeds, or files. All data processing occurs locally within your browser's memory.</p>
+                <p><strong>2. Local Storage:</strong> If you use the "Save Encrypted" feature for notes, the data is stored in your browser's <code>localStorage</code>, encrypted with a key derived from your master seed. This data never leaves your device.</p>
+                <p><strong>3. Third-Party Services:</strong> We do not use any third-party analytics, tracking cookies, or external APIs. The application is completely self-contained.</p>
+                <p><strong>4. Security:</strong> While we use industry-standard cryptographic practices, the security of your vault ultimately depends on the strength of your entropy and the physical security of your device.</p>
+            </div>
+            <button class="btn-outline btn-close-modal" style="width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <div id="terms-modal" class="legal-modal">
+        <div class="legal-content">
+            <h3>Terms & Conditions</h3>
+            <div class="legal-text">
+                <p><strong>1. Acceptance:</strong> By using Entropy Vault, you agree to these terms. If you do not agree, do not use the application.</p>
+                <p><strong>2. No Warranty:</strong> This software is provided "as is" without any warranty of any kind, express or implied. Use at your own risk.</p>
+                <p><strong>3. Responsibility:</strong> You are solely responsible for the management and backup of your master seed and entropy sources. Loss of these will result in permanent loss of access to your vault.</p>
+                <p><strong>4. Limitation of Liability:</strong> In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from the use of this software.</p>
+            </div>
+            <button class="btn-outline btn-close-modal" style="width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="camera-modal" class="modal">
+        <div class="modal-content">
+            <video id="camera-video" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button id="btn-camera-shutter" class="btn-shutter"></button>
+                <button id="btn-camera-close" class="btn-close">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Notice Banner -->
+    <div id="privacy-banner" class="privacy-banner hidden">
+        <div class="privacy-content">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <div>
+                <h4>Local Storage Only</h4>
+                <p>This app uses your browser's local storage strictly to save your encrypted notes. We do not use cookies, trackers, or transmit any data.</p>
+            </div>
+        </div>
+        <button id="btn-accept-privacy" class="btn-outline">Understood</button>
+    </div>
+
+    <script src="wordlist.js"></script>
+    <script src="crypto.js"></script>
+    <script src="stego.js"></script>
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('SW registered');
+                }).catch(err => {
+                    console.log('SW failed', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
